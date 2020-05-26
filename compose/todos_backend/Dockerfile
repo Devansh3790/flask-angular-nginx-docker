@@ -2,6 +2,8 @@ FROM python:3.7-alpine
 
 LABEL maintainer="Devansh Kumar <devansh2290@gmail.com>"
 
+ARG BUILD_ENV=production
+
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
@@ -13,7 +15,7 @@ RUN apk update \
 
 # Requirements are installed here to ensure they will be cached.
 COPY ./todos_backend/requirements /requirements
-RUN pip install -r /requirements/local.txt \
+RUN pip install -r /requirements/${BUILD_ENV}.txt \
     && rm -rf /requirements
 
 COPY ./compose/todos_backend/entrypoint /entrypoint
