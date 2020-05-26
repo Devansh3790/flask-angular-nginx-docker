@@ -1,0 +1,43 @@
+version: '3.3'
+
+services: 
+  users_backend:
+    build:
+      context: .
+      dockerfile: ./compose/users_backend/Dockerfile
+    image: users_backend_production
+    volumes:
+      - ./users_backend/src:/app
+    env_file:
+      - ./.env/.users
+    ports:
+      - 5000:5000
+    command: /start
+
+  todos_backend:
+    build:
+      context: .
+      dockerfile: ./compose/todos_backend/Dockerfile
+    image: todos_backend_production
+    volumes:
+      - ./todos_backend/src:/app
+    env_file:
+      - ./.env/.todos
+    ports:
+      - 5001:5001
+    command: /start
+
+  nginx:
+    build: 
+      context: .
+      dockerfile: ./compose/nginx/Dockerfile
+    image: nginx_production
+    depends_on:
+      - users_backend
+      - todos_backend
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d/nginx.production.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "80:80"
+    command: ["nginx", "-g", "daemon off;"]

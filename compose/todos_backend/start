@@ -4,5 +4,27 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-flask db upgrade
-flask run --host=0.0.0.0 --port=5001
+
+function manage_app() {
+    flask db upgrade
+}
+
+function start_local() {
+    # use flask development runserver as local server here.
+    manage_app
+    flask run --host=0.0.0.0 --port=5001
+}
+
+function start_production() {
+     # use gunicorn server here.
+    manage_app
+    gunicorn "app:create_app()" -w 4 -b 0.0.0.0:5001
+}
+
+if [ $FLASK_ENV == 'development' ]; then
+    # use development server
+    start_local
+else
+    # use production server
+    start_production
+fi

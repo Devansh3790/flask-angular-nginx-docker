@@ -23,6 +23,8 @@ services:
     build:
       context: .
       dockerfile: ./compose/users_backend/Dockerfile
+      args: 
+        - BUILD_ENV=local
     image: users_backend_local
     volumes:
       - ./users_backend/src:/app
@@ -59,6 +61,8 @@ services:
     build:
       context: .
       dockerfile: ./compose/todos_backend/Dockerfile
+      args: 
+        - BUILD_ENV=local
     image: todos_backend_local
     volumes:
       - ./todos_backend/src:/app
