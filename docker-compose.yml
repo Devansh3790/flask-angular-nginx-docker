@@ -1,0 +1,106 @@
+version: '3.3'
+
+
+volumes:
+  users_database_local: {}
+  todos_database_local: {}
+
+services: 
+  users_database:
+    build:
+      context: .
+      dockerfile: ./compose/users_database/Dockerfile
+    image: users_database_local
+    volumes:
+      - users_database_local:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=admin
+      - MYSQL_DATABASE=users_local_db
+      - MYSQL_USER=debug
+      - MYSQL_PASSWORD=debug
+
+  users_backend:
+    build:
+      context: .
+      dockerfile: ./compose/users_backend/Dockerfile
+    image: users_backend_local
+    volumes:
+      - ./users_backend/src:/app
+    depends_on: 
+      - users_database
+    environment:
+      - DB_HOST=users_database
+      - DB_NAME=users_local_db
+      - DB_USER=debug
+      - DB_PASSWORD=debug
+      - DB_PORT=3306
+      - FLASK_APP=app
+      - FLASK_ENV=development
+      - SECRET_KEY=vCy0Sec61i9prcGIRRCbG8e9NV6_wFH2ICFgUGCLKpc
+      - JWT_SECRET_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+    ports: 
+      - 5000:5000
+    command: /start
+
+  todos_database:
+    build:
+      context: .
+      dockerfile: ./compose/todos_database/Dockerfile
+    image: todos_database_local
+    volumes:
+      - todos_database_local:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=admin
+      - MYSQL_DATABASE=todos_local_db
+      - MYSQL_USER=debug
+      - MYSQL_PASSWORD=debug
+
+  todos_backend:
+    build:
+      context: .
+      dockerfile: ./compose/todos_backend/Dockerfile
+    image: todos_backend_local
+    volumes:
+      - ./todos_backend/src:/app
+    depends_on: 
+      - todos_database
+    environment:
+      - DB_HOST=todos_database
+      - DB_NAME=todos_local_db
+      - DB_USER=debug
+      - DB_PASSWORD=debug
+      - DB_PORT=3306
+      - FLASK_APP=app
+      - FLASK_ENV=development
+      - SECRET_KEY=vCy0Sec61i9prcGIRRCbG8e9NV6_wFH2ICFgUGCLKpc
+      - JWT_SECRET_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+    ports: 
+      - 5001:5001
+    command: /start
+
+  frontend:
+    build:
+      context: .
+      dockerfile: ./compose/frontend/Dockerfile
+    image: frontend_local
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - 4200:4200
+    command: /start
+
+  nginx:
+    build: 
+      context: .
+      dockerfile: ./compose/nginx/Dockerfile
+    image: nginx_local
+    depends_on:
+      - users_backend
+      - todos_backend
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d/nginx.local.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "80:80"
+    command: ["nginx", "-g", "daemon off;"]
