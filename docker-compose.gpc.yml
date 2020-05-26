@@ -1,0 +1,28 @@
+version: '3.3'
+
+services: 
+  users_backend:
+    image: devansh2290/microservice-users:1.0.0
+    env_file:
+      - ./.env/.users
+    volumes:
+      - ./users_backend/src:/app
+    ports:
+      - 5001:5001
+    command: /start
+
+  todos_backend:
+    image: devansh2290/microservice-todos:1.0.0
+    env_file:
+      - ./.env/.todos
+    volumes:
+      - ./todos_backend/src:/app
+    ports:
+      - 5001:5001
+    command: /start
+
+  nginx:
+    image: devansh2290/microservice-nginx:1.0.0
+    ports:
+      - "80:80"
+    command: ["nginx", "-g", "daemon off;"]
